@@ -1,0 +1,2642 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0f1117">
+    <title>FitTracker — Plano Corporal + Kegel + Masseter</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+    <meta name="apple-mobile-web-app-title" content="FitTracker">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f1117;
+            --bg2: #1a1d27;
+            --bg3: #23273a;
+            --card: #1e2235;
+            --border: rgba(255,255,255,0.08);
+            --text: #f0f2ff;
+            --muted: #8892b0;
+            --accent: #7c6ef2;
+            --accent2: #5de0c5;
+            --warn: #f0c040;
+            --danger: #e2564a;
+            --success: #4caf87;
+            --orange: #ff9f4a;
+            --radius: 16px;
+            --transition: all 0.2s ease;
+        }
+        .light {
+            --bg: #f4f5fb;
+            --bg2: #ffffff;
+            --bg3: #eef0f8;
+            --card: #ffffff;
+            --border: rgba(0,0,0,0.08);
+            --text: #1a1d2e;
+            --muted: #6b7280;
+            --accent: #6354e0;
+            --accent2: #0da882;
+            --warn: #c47d00;
+            --danger: #b93025;
+            --success: #2d7a5c;
+            --orange: #e67e22;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            font-size: 14px;
+            line-height: 1.4;
+            transition: var(--transition);
+        }
+        .app {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 16px 12px 24px;
+            min-height: 100vh;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            background: var(--card);
+            border-radius: var(--radius);
+            border: 0.5px solid var(--border);
+        }
+        .header-title {
+            font-size: 16px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .theme-btn {
+            background: var(--bg3);
+            border: none;
+            color: var(--text);
+            border-radius: 30px;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        .theme-btn:active { transform: scale(0.96); }
+        
+        .xp-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            border: 0.5px solid var(--border);
+            padding: 12px 16px;
+            margin-bottom: 16px;
+        }
+        .xp-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .level-badge {
+            background: var(--accent);
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 30px;
+        }
+        .streak {
+            background: rgba(240,192,64,0.2);
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--warn);
+        }
+        .xp-track {
+            background: var(--bg3);
+            border-radius: 30px;
+            height: 8px;
+            overflow: hidden;
+        }
+        .xp-fill {
+            height: 100%;
+            border-radius: 30px;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            width: 0%;
+            transition: width 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+        
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+        .day-card {
+            background: var(--bg2);
+            border-radius: 14px;
+            padding: 8px 4px;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+        .day-card.active {
+            border-color: var(--accent);
+            background: rgba(124,110,242,0.1);
+        }
+        .day-card.done {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+        .day-card.rest {
+            background: var(--bg3);
+            opacity: 0.8;
+        }
+        .day-card.corda {
+            background: var(--orange);
+            color: white;
+        }
+        .day-name {
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        .day-tag {
+            font-size: 10px;
+            font-weight: 600;
+            background: rgba(0,0,0,0.2);
+            border-radius: 20px;
+            padding: 2px 6px;
+            display: inline-block;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+            background: var(--bg3);
+            border-radius: 40px;
+            padding: 4px;
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px 4px;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 30px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+        .tab.active {
+            background: var(--card);
+            color: var(--text);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.25s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            margin-bottom: 12px;
+        }
+        
+        .exercise-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            border: 0.5px solid var(--border);
+            padding: 14px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .exercise-card:active { transform: scale(0.99); }
+        .ex-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            background: var(--bg3);
+            flex-shrink: 0;
+        }
+        .ex-info { flex: 1; }
+        .ex-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+        .ex-sets { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+        .progress-mini { height: 4px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
+        .progress-mini-fill { height: 100%; background: var(--accent2); width: 0%; transition: width 0.2s; }
+        .ex-check {
+            width: 32px;
+            height: 32px;
+            border-radius: 30px;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .ex-check.checked { background: var(--success); border-color: var(--success); color: white; }
+        
+        /* Estilos do Cronômetro */
+        .timer-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 24px 16px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .timer-ring {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 16px;
+        }
+        .timer-svg {
+            transform: rotate(-90deg);
+        }
+        .timer-bg, .timer-progress {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+        }
+        .timer-bg { stroke: var(--bg3); }
+        .timer-progress { stroke: var(--accent2); transition: stroke-dashoffset 0.3s linear; }
+        .timer-digits {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 38px;
+            font-weight: 700;
+        }
+        .timer-label {
+            font-size: 14px;
+            color: var(--muted);
+            margin: 8px 0;
+        }
+        .timer-phase {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .phase-work { background: rgba(124,110,242,0.2); color: var(--accent); }
+        .phase-rest { background: rgba(93,224,197,0.2); color: var(--accent2); }
+        
+        .set-dots {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 16px 0;
+            flex-wrap: wrap;
+        }
+        .set-dot {
+            width: 38px;
+            height: 38px;
+            border-radius: 30px;
+            background: var(--bg3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+        .set-dot.done { background: var(--success); color: white; }
+        .set-dot.active { border: 2px solid var(--accent); background: var(--accent); color: white; }
+        
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 16px;
+            width: 100%;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn-primary:active { transform: scale(0.98); }
+        .btn-secondary {
+            background: var(--bg3);
+            color: var(--text);
+            border: none;
+            padding: 12px;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn-corda {
+            background: var(--orange);
+            color: white;
+        }
+        
+        .aux-item {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .aux-check {
+            width: 24px;
+            height: 24px;
+            border-radius: 30px;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        .aux-check.done { background: var(--success); border-color: var(--success); color: white; }
+        
+        .medidas-form {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .form-field input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 12px;
+            background: var(--bg3);
+            border: none;
+            color: var(--text);
+            font-size: 14px;
+        }
+        .form-field label {
+            font-size: 11px;
+            color: var(--muted);
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .tecnica-animation {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .anim-canvas {
+            width: 100%;
+            max-width: 280px;
+            margin: 0 auto;
+            display: block;
+        }
+        .fase-label {
+            margin-top: 12px;
+            padding: 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-block;
+        }
+        .fase-down { background: rgba(124,110,242,0.2); color: var(--accent); }
+        .fase-up { background: rgba(93,224,197,0.2); color: var(--accent2); }
+        .fase-hold { background: rgba(240,192,64,0.2); color: var(--warn); }
+        
+        .step-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .ex-icon-img {
+            width: 56px;
+            height: 56px;
+            border-radius: 20px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        /* ===== WORKOUT MODAL ===== */
+        .workout-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 500;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+        .workout-modal {
+            background: var(--card);
+            border-radius: 24px 24px 0 0;
+            padding: 24px 20px 36px;
+            width: 100%;
+            max-width: 500px;
+            animation: slideUp 0.3s cubic-bezier(0.2,0.9,0.4,1.1);
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .wm-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .wm-title { font-size: 17px; font-weight: 700; }
+        .wm-progress { font-size: 12px; color: var(--muted); }
+        .wm-ex-img {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 16px;
+            margin-bottom: 16px;
+        }
+        .wm-ex-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+        .wm-ex-sets { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+        .wm-set-dots {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        /* reuse .set-dot from corda */
+
+        /* Rest Timer inside modal */
+        .wm-rest-block {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .wm-rest-ring {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 10px;
+        }
+        .wm-rest-digits {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            font-size: 34px;
+            font-weight: 700;
+            color: var(--accent2);
+        }
+        .wm-rest-label {
+            font-size: 13px;
+            color: var(--accent2);
+            font-weight: 600;
+        }
+        .wm-btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .wm-phase-badge {
+            text-align: center;
+            padding: 8px;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .wm-phase-work { background: rgba(124,110,242,0.2); color: var(--accent); }
+        .wm-phase-rest { background: rgba(93,224,197,0.2); color: var(--accent2); }
+        .step-num {
+            width: 28px;
+            height: 28px;
+            background: var(--accent);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        
+        .notif {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--success);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-weight: 500;
+            z-index: 1000;
+            display: none;
+            text-align: center;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        
+        .history-table {
+            width: 100%;
+            font-size: 11px;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        .history-table th, .history-table td {
+            padding: 6px 5px;
+            text-align: center;
+            border-bottom: 0.5px solid var(--border);
+            white-space: nowrap;
+        }
+        .history-table th {
+            font-size: 10px;
+            color: var(--muted);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .corda-stats {
+            display: flex;
+            justify-content: space-between;
+            margin: 16px 0;
+            padding: 12px;
+            background: var(--bg3);
+            border-radius: var(--radius);
+        }
+        .corda-stat {
+            text-align: center;
+        }
+        .corda-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--orange);
+        }
+        .corda-stat-label {
+            font-size: 11px;
+            color: var(--muted);
+        }
+    
+        /* ===== LOGIN OVERLAY ===== */
+        #login-overlay {
+            display: flex;
+            position: fixed; inset: 0;
+            background: var(--bg);
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 32px;
+        }
+        .login-logo {
+            width: 80px; height: 80px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 38px;
+        }
+        .login-title { font-size: 26px; font-weight: 900; }
+        .login-sub { color: var(--muted); font-size: 15px; text-align: center; line-height: 1.5; }
+        .login-btn-google {
+            display: flex; align-items: center; gap: 12px;
+            background: #fff; color: #1a1a2e;
+            border: none; border-radius: 14px;
+            padding: 14px 28px; font-size: 16px; font-weight: 700;
+            cursor: pointer; width: 100%; max-width: 320px;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            transition: transform .15s, box-shadow .15s;
+        }
+        .login-btn-google:active { transform: scale(.97); }
+        .login-privacy { font-size: 12px; color: var(--muted); text-align: center; max-width: 280px; }
+
+        /* ===== USER AVATAR in header ===== */
+        .user-avatar {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 700; color: #0f1117;
+            cursor: pointer;
+        }
+
+        /* ===== AUX TIMER CARDS ===== */
+        .aux-item-card {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border: 1px solid var(--border);
+            transition: opacity .3s;
+        }
+        .aux-item-card.done { opacity: 0.55; }
+        .aux-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+        .aux-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .aux-check-box {
+            width: 28px; height: 28px; border-radius: 8px;
+            border: 2px solid var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; font-weight: 700; color: var(--accent);
+            cursor: pointer; flex-shrink: 0;
+            transition: background .2s;
+        }
+        .aux-check-box.done { background: var(--accent); color: #0f1117; }
+        .aux-text { min-width: 0; }
+        .aux-label { font-size: 14px; font-weight: 600; color: var(--text); }
+        .aux-label.striked { text-decoration: line-through; color: var(--muted); }
+        .aux-detail { font-size: 12px; color: var(--muted); margin-top: 2px; }
+        .aux-timer-wrap { position: relative; width: 72px; height: 72px; flex-shrink: 0; }
+        .aux-timer-svg { position: absolute; top: 0; left: 0; }
+        .aux-timer-bg { stroke: var(--bg3); }
+        .aux-timer-ring { stroke: var(--accent2); stroke-linecap: round; }
+        .aux-timer-ring.running { stroke: var(--accent); }
+        .aux-timer-digits {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700; color: var(--text);
+        }
+        .aux-timer-btn {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--accent); color: #0f1117;
+            border: none; font-size: 14px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: background .2s, transform .15s;
+        }
+        .aux-timer-btn.pausing { background: var(--warn); }
+        .aux-timer-btn.hidden { display: none; }
+        .aux-timer-btn:active { transform: scale(.92); }
+        .aux-info-icon { font-size: 24px; }
+
+        /* === AUX SIMPLE CARD === */
+        .aux-simple {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            display: flex; align-items: flex-start; gap: 12px;
+            border: 1px solid var(--border);
+            transition: opacity .3s;
+        }
+        .aux-simple.aux-done { opacity: 0.5; }
+        .aux-status-row {
+            display: flex; align-items: center; flex-wrap: wrap;
+            margin-top: 6px; gap: 0;
+        }
+        .btn-aux-mini {
+            background: var(--accent); color: #0f1117;
+            border: none; border-radius: 10px;
+            padding: 7px 16px; font-size: 13px; font-weight: 700;
+            cursor: pointer;
+            transition: background .2s, transform .15s;
+        }
+        .btn-aux-mini:active { transform: scale(.96); }
+        .btn-aux-mini-pause { background: var(--warn); }
+        /* === BIBLIOTECA === */
+        .lib-filter-row {
+            display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;
+        }
+        .lib-filter-btn {
+            padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border);
+            background: var(--bg3); color: var(--muted); font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: background .15s, color .15s;
+        }
+        .lib-filter-btn.active { background: var(--accent); color: #0f1117; border-color: var(--accent); }
+        .lib-card {
+            display: flex; align-items: center; gap: 12px;
+            background: var(--card); border-radius: 14px;
+            padding: 10px 14px; margin-bottom: 8px;
+            border: 1px solid var(--border);
+        }
+        .lib-gif {
+            width: 64px; height: 64px; border-radius: 10px; object-fit: cover; flex-shrink: 0;
+            background: var(--bg3);
+        }
+        .lib-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+        .lib-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+        .lib-tag {
+            padding: 2px 8px; border-radius: 8px;
+            background: var(--bg3); color: var(--muted); font-size: 11px; font-weight: 600;
+        }
+        .lib-tag-equip { background: var(--accent2); color: #0f1117; }
+
+        /* === MODAIS === */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,.7);
+            z-index: 9990; display: flex; align-items: flex-end; justify-content: center;
+            animation: fadeIn .2s;
+        }
+        .modal-box {
+            background: var(--bg2); border-radius: 20px 20px 0 0;
+            padding: 24px 20px 32px; width: 100%; max-width: 500px;
+            max-height: 85vh; overflow-y: auto;
+        }
+        .modal-title { font-size: 18px; font-weight: 900; margin-bottom: 4px; }
+        .modal-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+        .btn-preset {
+            display: flex; align-items: center; gap: 12px;
+            width: 100%; background: var(--card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 14px 16px; margin-bottom: 8px;
+            cursor: pointer; text-align: left; color: var(--text);
+            transition: background .15s;
+        }
+        .btn-preset:active { background: var(--bg3); }
+        .btn-secondary {
+            background: var(--bg3); color: var(--text);
+            border: 1px solid var(--border); border-radius: 12px;
+            padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer;
+        }
+        .btn-ghost {
+            background: transparent; color: var(--muted);
+            border: none; border-radius: 12px;
+            padding: 10px; font-size: 14px; cursor: pointer;
+        }
+        @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+
+        .btn-aux-mini-reset {
+            background: var(--bg3); color: var(--muted);
+            border: none; border-radius: 10px;
+            padding: 7px 12px; font-size: 14px;
+            cursor: pointer;
+        }
+
+    </style>
+
+</head>
+<body>
+
+<!-- LOGIN OVERLAY -->
+<div id="login-overlay" style="display:flex;">
+    <div class="login-logo"><img src="data:image/jpeg;base64,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" style="width:80px;height:80px;border-radius:20px;object-fit:cover;" alt="FitTracker"></div>
+    <div class="login-title">FitTracker</div>
+    <div class="login-sub">Treino, nutrição e evolução<br>num só lugar</div>
+    <button class="login-btn-google" onclick="doSignIn()">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Entrar com Google
+    </button>
+    <div class="login-privacy">Seus dados ficam salvos na nuvem e sincronizam entre dispositivos.</div>
+</div>
+
+<div class="app" id="app" style="display:none">
+    <div class="header">
+        <div class="header-title" style="display:flex;align-items:center;gap:8px;"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAgACADASIAAhEBAxEB/8QAFwABAQEBAAAAAAAAAAAAAAAABwUIBv/EACsQAAEDAwMDAwQDAQAAAAAAAAECAwUEBgcREyEiEjFBIkJRcQgyYfCRwf/EABQBAQAAAAAAAAAAAAAAAAAAAAD/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwAIt62JKciJVolsJZjG+46FqIUvgqITx8AnnGoHc+V49/u01WciPYsiXZo0IZK4NlyoKR9zimXepR+T4/WuqtuOt/braiAmKy4oByRk2amVi6Wtg1LcqVOsFkMqfDgSlGFJOTjBJOCBgyYOdJkTTKwoKRWvkXzV9QwVxYYWBssDfg8zZ1nBIWSB551euW15OAjYyvrnKdbUi13Gg2olSOAcK484UPGRpf3PqdrpuzVKYlIVEo3QwlOy/TgKeaQlpzvBKRjOOAr44zyANS79TQP2RGIq2kOKRBPOU5V/BxLbJCh8Hz+9GbnSQTwoo0xN6+B7fvHgYC5ME0hO1Arff3/ADh9Z90MxUDNUVWpxxdXS9lj3A9KgB+PVrS/0rX/ABd+2Grae5ogPLoKDstLDPU0/TAYBV/RxPz74BBB1jRp9B9ClBKh7E4zpJ2I3UVtZOyMszCsSy62lTT9C6os9sBfVkEJOc+NXmBAWdR1NV9619cgkneREjY6W68m+Mv1lS1vQFrxm3cbFdUkrs1FTIOU4SS22nj14yta1EE44HPudAt6XS1LQMNQ0qnUrpKVTT5PHVkJGPx6dV9+d11bqzMZJvQjEQuhplsFKKovdwKUFAklKcY/7oxfqEY7aFBS1cYHt/ukIEJV2HUt12vR/nBMmSNHjU6ar8G/vn//2Q==" style="width:28px;height:28px;border-radius:7px;object-fit:cover;" alt="">FitTracker</div>
+        <button class="theme-btn" onclick="toggleTheme()">🌙</button>
+    <div class="user-avatar" id="user-avatar" title="Usuário" onclick="doSignOut()">👤</div>
+    </div>
+
+    <div class="xp-card">
+        <div class="xp-row">
+            <div><span class="level-badge" id="levelBadge">Nível 1</span></div>
+            <div><span class="streak" id="streakBadge">🔥 0 dias</span></div>
+            <div><span id="xpText">0 / 500 XP</span></div>
+        </div>
+        <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
+    </div>
+
+    <div class="week-grid" id="weekGrid"></div>
+
+    <div class="tabs" id="tabs">
+        <button class="tab active" data-tab="treino">🏋️ Treino</button>
+        <button class="tab" data-tab="corda">🪢 Cordas</button>
+        <button class="tab" data-tab="auxiliar">🧘 Auxiliar</button>
+        <button class="tab" data-tab="tecnica">🎯 Técnica</button>
+        <button class="tab" data-tab="medidas">📏 Medidas</button>
+        <button class="tab" data-tab="biblioteca">📚 Biblioteca</button>
+    </div>
+
+    <!-- Tela Treino -->
+    <div class="screen active" id="treino">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div class="section-title" style="margin:0;" id="workoutTitle">🔥 Treino Atual</div>
+            <button class="btn-aux-mini" onclick="showWorkoutPicker()">🔀 Trocar</button>
+        </div>
+        <div id="exerciseList"></div>
+        <button class="btn-primary" onclick="startFullWorkout()">🚀 Iniciar Treino Completo</button>
+    </div>
+
+    <!-- Tela Corda (Treino HIIT) -->
+    <div class="screen" id="corda">
+        <div class="section-title">🪢 Treino de Cordas - HIIT</div>
+        <div style="text-align:center;margin-bottom:12px;"><img src="data:image/jpeg;base64,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" style="width:100%;max-width:320px;border-radius:14px;object-fit:cover;" alt="Pular Corda"></div>
+        <div class="timer-card">
+            <div class="timer-ring">
+                <svg width="180" height="180" class="timer-svg">
+                    <circle class="timer-bg" cx="90" cy="90" r="78" stroke-width="8" fill="none"/>
+                    <circle class="timer-progress" id="cordaTimerProgress" cx="90" cy="90" r="78" stroke-width="8" fill="none" stroke-dasharray="490.09" stroke-dashoffset="0"/>
+                </svg>
+                <div class="timer-digits" id="cordaTimerDigits">00:45</div>
+            </div>
+            <div>
+                <span class="timer-phase" id="cordaPhase">🏃‍♂️ TREINO - 45s</span>
+            </div>
+            <div class="timer-label" id="cordaStatus">Série 1 de 15</div>
+            <div class="corda-stats">
+                <div class="corda-stat">
+                    <div class="corda-stat-value" id="cordaCycleCount">0</div>
+                    <div class="corda-stat-label">Ciclos</div>
+                </div>
+                <div class="corda-stat">
+                    <div class="corda-stat-value" id="cordaTotalTime">0</div>
+                    <div class="corda-stat-label">Tempo Total</div>
+                </div>
+                <div class="corda-stat">
+                    <div class="corda-stat-value" id="cordaRemaining">15</div>
+                    <div class="corda-stat-label">Restantes</div>
+                </div>
+            </div>
+            <div class="set-dots" id="cordaSetDots"></div>
+            <div style="display: flex; gap: 12px; margin-top: 16px;">
+                <button class="btn-secondary" style="flex:1" onclick="resetCordaTimer()">🔄 Reiniciar</button>
+                <button class="btn-primary btn-corda" style="flex:2" id="cordaStartBtn" onclick="toggleCordaTimer()">▶️ Iniciar Treino</button>
+            </div>
+        </div>
+        <div style="background: var(--bg3); border-radius: var(--radius); padding: 12px; font-size: 12px; text-align: center;">
+            💡 Protocolo: 45s de salto + 15s de descanso 🔄<br>
+            🔔 Total: 15 ciclos = 15 minutos de treino completo<br>
+            🔊 Alerta sonoro nos últimos 5 segundos de cada fase
+        </div>
+    </div>
+
+    <!-- Tela Auxiliar -->
+    <div class="screen" id="auxiliar">
+        <div class="section-title">💧 Plano Kegel (Pélvico)</div>
+        <div id="kegelList"></div>
+        <div class="section-title" style="margin-top:20px;">🦷 Plano Masseter (Mandíbula)</div>
+        <div id="masseterList"></div>
+
+    </div>
+
+    <!-- Tela Técnica (Animação) -->
+    <div class="screen" id="tecnica">
+        <div class="section-title">🎯 Técnica: Agachamento Búlgaro</div>
+        <div class="tecnica-animation">
+            <canvas id="bulgarianCanvas" width="280" height="200" class="anim-canvas"></canvas>
+            <div class="fase-label" id="faseAnim">⬇️ Descida - 3 segundos, controlado</div>
+            <div style="margin-top: 16px; display: flex; gap: 8px; justify-content: center;">
+                <button class="btn-secondary" id="animBtn" onclick="toggleAnim()">⏸️ Pausar</button>
+                <button class="btn-secondary" onclick="resetAnim()">🔄 Reiniciar</button>
+            </div>
+        </div>
+        <div class="step-card">
+            <div class="step-num">1</div>
+            <div>Posicione a perna de trás em um banco, mantendo o tronco ereto.</div>
+        </div>
+        <div class="step-card">
+            <div class="step-num">2</div>
+            <div>Desça lentamente controlando o movimento por 3 segundos.</div>
+        </div>
+        <div class="step-card">
+            <div class="step-num">3</div>
+            <div>No ponto mais baixo, contraia o glúteo da perna da frente.</div>
+        </div>
+        <div class="step-card">
+            <div class="step-num">4</div>
+            <div>Suba com força, empurrando o calcanhar.</div>
+        </div>
+    </div>
+
+    <!-- Tela Medidas -->
+    <div class="screen" id="medidas">
+        <div class="section-title">📏 Registrar Medidas</div>
+        <div class="medidas-form">
+            <div class="form-row">
+                <div class="form-field"><label>Data</label><input type="date" id="medData"></div>
+                <div class="form-field"><label>Peso (kg)</label><input type="number" id="medPeso" step="0.1" placeholder="90.0"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-field"><label>Cintura (cm)</label><input type="number" id="medCintura" placeholder="80"></div>
+                <div class="form-field"><label>Peito/Busto (cm)</label><input type="number" id="medPeito" placeholder="95"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-field"><label>Coxa (cm)</label><input type="number" id="medCoxaD" placeholder="58"></div>
+                <div class="form-field"><label>Panturrilha (cm)</label><input type="number" id="medPanturrilha" placeholder="38"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-field"><label>Bíceps (cm)</label><input type="number" id="medBiceps" placeholder="35"></div>
+                <div class="form-field"><label>Antebraço (cm)</label><input type="number" id="medAntebraco" placeholder="28"></div>
+            </div>
+
+            <button class="btn-primary" onclick="saveMeasure()">Salvar Medidas +15 XP</button>
+        </div>
+        <div class="section-title">Histórico</div>
+        <div style="background: var(--card); border-radius: var(--radius); overflow-x: auto; padding: 8px;">
+            <table class="history-table" id="historyTable">
+                <thead><tr><th>Data</th><th>Peso</th><th>Cintura</th><th>Peito</th><th>Coxa</th><th>Bíceps</th><th>Antebr.</th><th>Panturr.</th><th>Δ Peso</th></tr></thead>
+                <tbody id="historyBody"></tbody>
+              </table>
+        </div>
+    </div>
+
+    <!-- Workout Modal -->
+    <div class="workout-modal-overlay" id="workoutModal" style="display:none;">
+        <div class="workout-modal">
+            <div class="wm-header">
+                <div class="wm-title" id="wmTitle">Exercício</div>
+                <div class="wm-progress" id="wmProgress">1 / 5</div>
+            </div>
+            <!-- Exercise view -->
+            <div id="wmExerciseView">
+                <img class="wm-ex-img" id="wmExImg" src="" alt="">
+                <div class="wm-phase-badge wm-phase-work" id="wmPhaseBadge">💪 EXECUTE A SÉRIE</div>
+                <div class="wm-ex-name" id="wmExName"></div>
+                <div class="wm-ex-sets" id="wmExSets"></div>
+                <div class="wm-set-dots" id="wmSetDots"></div>
+                <div class="wm-btn-row">
+                    <button class="btn-secondary" style="flex:1" onclick="closeWorkoutModal()">✖ Fechar</button>
+                    <button class="btn-primary" style="flex:2" id="wmCompleteBtn" onclick="wmCompleteSet()">✅ Concluir Série</button>
+                </div>
+            </div>
+            <!-- Rest view -->
+            <div id="wmRestView" style="display:none;">
+                <div class="wm-phase-badge wm-phase-rest">💨 DESCANSO</div>
+                <div class="wm-rest-block">
+                    <div class="wm-rest-ring">
+                        <svg width="140" height="140" style="transform:rotate(-90deg)">
+                            <circle cx="70" cy="70" r="60" fill="none" stroke="var(--bg3)" stroke-width="8"/>
+                            <circle id="wmRestProgress" cx="70" cy="70" r="60" fill="none"
+                                stroke="var(--accent2)" stroke-width="8"
+                                stroke-linecap="round"
+                                stroke-dasharray="376.99"
+                                stroke-dashoffset="0"/>
+                        </svg>
+                        <div class="wm-rest-digits" id="wmRestDigits">60</div>
+                    </div>
+                    <div class="wm-rest-label" id="wmRestLabel">Próximo: —</div>
+                    <div style="margin-top:10px;display:flex;align-items:center;gap:8px;justify-content:center;">
+                        <span style="font-size:11px;color:var(--muted)">Descanso:</span>
+                        <input type="number" id="wmRestEdit" min="10" max="300" value="60"
+                            style="width:60px;padding:4px 8px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:13px;font-weight:600;text-align:center;"
+                            onchange="wmUpdateRestTime(this.value)">
+                        <span style="font-size:11px;color:var(--muted)">seg</span>
+                    </div>
+                </div>
+                <div class="wm-btn-row">
+                    <button class="btn-secondary" style="flex:1" onclick="wmSkipRest()">⏭ Pular</button>
+                    <button class="btn-secondary" style="flex:1" onclick="closeWorkoutModal()">✖ Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<div id="notif" class="notif">✅ Treino concluído!</div>
+
+<!-- Tela Biblioteca -->
+    <div class="screen" id="biblioteca">
+        <div class="section-title">📚 Biblioteca de Exercícios</div>
+
+        <!-- Busca + filtro -->
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <input type="text" id="libSearch" placeholder="🔍 Buscar exercício..."
+                oninput="filterLibrary()"
+                style="flex:1;padding:10px 14px;border-radius:12px;border:1px solid var(--border);
+                       background:var(--card);color:var(--text);font-size:14px;">
+        </div>
+        <div class="lib-filter-row" id="libFilters">
+            <button class="lib-filter-btn" data-muscle="Todos">Todos</button>
+            <button class="lib-filter-btn" data-muscle="Abdômen">Abdômen</button>
+            <button class="lib-filter-btn" data-muscle="Bíceps">Bíceps</button>
+            <button class="lib-filter-btn" data-muscle="Costas">Costas</button>
+            <button class="lib-filter-btn" data-muscle="Glúteo">Glúteo</button>
+            <button class="lib-filter-btn" data-muscle="Ombro">Ombro</button>
+            <button class="lib-filter-btn" data-muscle="Panturrilha">Panturrilha</button>
+            <button class="lib-filter-btn" data-muscle="Peito">Peito</button>
+            <button class="lib-filter-btn" data-muscle="Pernas">Pernas</button>
+            <button class="lib-filter-btn" data-muscle="Posterior">Posterior</button>
+            <button class="lib-filter-btn" data-muscle="Tríceps">Tríceps</button>
+        </div>
+
+        <!-- Lista -->
+        <div id="libList"></div>
+    </div>
+
+    <!-- Tela Meus Treinos (modal-style picker) built via JS -->
+
+
+<script type="module">
+(async () => {
+  const fallback = () => {
+    window._fb = {
+      signIn: async () => { alert("Erro ao conectar. Verifique sua internet."); },
+      signOut: () => {},
+      onAuth: (cb) => { cb(null); },
+      saveData: async () => {},
+      loadAll: async () => ({})
+    };
+    window.dispatchEvent(new Event("firebase-ready"));
+  };
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
+    const { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged }
+      = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+    const { getFirestore, doc, setDoc, collection, getDocs }
+      = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+
+    const app = initializeApp({
+      apiKey: "AIzaSyAWirVMtRkvSlSs4vC9Udr7XGZCrBCfs6M",
+      authDomain: "fittracker-42691.firebaseapp.com",
+      projectId: "fittracker-42691",
+      storageBucket: "fittracker-42691.firebasestorage.app",
+      messagingSenderId: "397335004989",
+      appId: "1:397335004999:web:baee2a7d1c234f8999e754"
+    });
+    const auth = getAuth(app);
+    // Handle redirect result (when coming back from Google redirect login)
+    getRedirectResult(auth).then(result => {
+      if (result && result.user) {
+        // Successfully signed in via redirect - onAuthStateChanged will fire
+        console.log('Redirect login OK:', result.user.email);
+      }
+    }).catch(e => { console.warn('Redirect result error:', e); });
+    const db = getFirestore(app);
+    const prov = new GoogleAuthProvider();
+
+    function stripImgs(sheets) {
+      return (sheets||[]).map(s => ({...s, exercises:(s.exercises||[]).map(e => ({...e, image:""}))}));
+    }
+    async function fsSave(uid, key, val) {
+      const j = JSON.stringify(val);
+      const LIM = 900000;
+      if (j.length <= LIM) {
+        await setDoc(doc(db,"users",uid,"data",key), {v:j, chunked:false});
+      } else {
+        const arr = Array.isArray(val) ? val : [val];
+        const chunks = []; let cur = [];
+        for (const item of arr) {
+          cur.push(item);
+          if (JSON.stringify(cur).length > LIM) { cur.pop(); if(cur.length) chunks.push(cur); cur=[item]; }
+        }
+        if (cur.length) chunks.push(cur);
+        for (let i=0; i<chunks.length; i++)
+          await setDoc(doc(db,"users",uid,"data",key+"__"+i), {v:JSON.stringify(chunks[i])});
+        await setDoc(doc(db,"users",uid,"data",key), {v:"[]", chunked:true, chunkCount:chunks.length});
+      }
+    }
+    async function fsLoad(uid) {
+      const snap = await getDocs(collection(db,"users",uid,"data"));
+      const raw = {};
+      snap.forEach(d => { raw[d.id] = d.data(); });
+      const res = {};
+      for (const [k,d] of Object.entries(raw)) {
+        if (k.includes("__")) continue;
+        try {
+          res[k] = d.chunked
+            ? Array.from({length:d.chunkCount},(_,i)=>raw[k+"__"+i]).flatMap(cd=>cd&&cd.v?JSON.parse(cd.v):[])
+            : JSON.parse(d.v);
+        } catch(e) {}
+      }
+      return res;
+    }
+    window._fb = {
+      signIn: async () => {
+        prov.setCustomParameters({prompt:"select_account"});
+        try {
+          // Tenta popup primeiro
+          await signInWithPopup(auth, prov);
+        } catch(e) {
+          // Popup bloqueado → usa redirect
+          if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') {
+            await signInWithRedirect(auth, prov);
+          } else {
+            throw e;
+          }
+        }
+      },
+      signOut: () => signOut(auth),
+      onAuth: cb => onAuthStateChanged(auth, cb),
+      saveData: async (uid,key,val) => { await fsSave(uid, key, key==="sheets" ? stripImgs(val) : val); },
+      loadAll: async uid => fsLoad(uid)
+    };
+    console.log("Firebase OK");
+  } catch(e) {
+    console.error("Firebase error:", e);
+    fallback(); return;
+  }
+  window.dispatchEvent(new Event("firebase-ready"));
+})();
+</script>
+<script>
+
+    // ======================== EXERCÍCIOS ========================
+
+    // ── Exercise Library (all exercises with GIF urls) ────────────────────────
+    const EXERCISE_LIBRARY = [
+        // === PERNAS ===
+        { id: "l001", name: "Agachamento", muscle: "Pernas", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Agachamento.webp" },
+        { id: "l002", name: "Agachamento Búlgaro", muscle: "Pernas", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Agachamento Búlgaro.webp" },
+        { id: "l003", name: "Agachamento Búlgaro com Halteres", muscle: "Pernas", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Agachamento Búlgaro com Halteres.webp" },
+        { id: "l004", name: "Agachamento Frontal", muscle: "Pernas", equip: "Barra", gif: "https://capuchowp-design.github.io/FitTracker/Agachamento Frontal.webp" },
+        { id: "l005", name: "Agachamento Goblet", muscle: "Pernas", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Agachamento Goblet com Haltere.webp" },
+        { id: "l006", name: "Agachamento Pistola", muscle: "Pernas", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Agachamento pistola.webp" },
+        { id: "l007", name: "Agachamento Sumô", muscle: "Pernas", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Agachamento Sumô com Halteres.webp" },
+        { id: "l008", name: "Afundo", muscle: "Pernas", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Afundo.webp" },
+        { id: "l009", name: "Afundo com Halteres", muscle: "Pernas", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Afundo com Halteres.webp" },
+        { id: "l010", name: "Afundo Lateral", muscle: "Pernas", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Afundo Lateral.webp" },
+        { id: "l011", name: "Afundo no Banco", muscle: "Pernas", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Afundo no banco.webp" },
+        { id: "l012", name: "Agachamento Búlgaro com Salto", muscle: "Pernas", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Agachamento búlgaro com salto.webp" },
+        { id: "l013", name: "Leg Press", muscle: "Pernas", equip: "Máquina", gif: "https://capuchowp-design.github.io/FitTracker/Leg Press.webp" },
+        { id: "l014", name: "Agachamento com Salto", muscle: "Pernas", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Agachamento com Salto.webp" },
+        
+        // === POSTERIOR / GLÚTEOS ===
+        { id: "l015", name: "Levantamento Terra", muscle: "Posterior", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Levantamento Terra.webp" },
+        { id: "l016", name: "Levantamento Terra Romeno", muscle: "Posterior", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Levantamento terra romeno com halteres.webp" },
+        { id: "l017", name: "Stiff", muscle: "Posterior", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Stiff com Halter.webp" },
+        { id: "l018", name: "Ponte de Glúteos", muscle: "Glúteo", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Ponte de Glúteos.webp" },
+        { id: "l019", name: "Elevação Pélvica", muscle: "Glúteo", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Elevação Pélvica.webp" },
+        { id: "l020", name: "Coice de Burro", muscle: "Glúteo", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Coice de Burro.webp" },
+        { id: "l021", name: "Abdução de Quadril Lateral", muscle: "Glúteo", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Abdução de Quadril Lateral.webp" },
+        { id: "l022", name: "Glúteo 4 Apoios", muscle: "Glúteo", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Glúteo 4 Apoios.webp" },
+        
+        // === COSTAS ===
+        { id: "l023", name: "Barra Fixa", muscle: "Costas", equip: "Barra Fixa", gif: "https://capuchowp-design.github.io/FitTracker/Barra fixa.webp" },
+        { id: "l024", name: "Remada Curvada", muscle: "Costas", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Remada Curvada.webp" },
+        { id: "l025", name: "Remada Curvada com Barra", muscle: "Costas", equip: "Barra", gif: "https://capuchowp-design.github.io/FitTracker/Remada Curvada com Barra.webp" },
+        { id: "l026", name: "Remada Unilateral", muscle: "Costas", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Remada Unilateral.webp" },
+        { id: "l027", name: "Pulldown", muscle: "Costas", equip: "Polia", gif: "https://capuchowp-design.github.io/FitTracker/Pulldown.webp" },
+        { id: "l028", name: "Hiperextensão", muscle: "Costas", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Hiperextensão.webp" },
+        
+        // === PEITO ===
+        { id: "l029", name: "Supino Reto", muscle: "Peito", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Supino Reto.webp" },
+        { id: "l030", name: "Supino Inclinado", muscle: "Peito", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Supino Inclinado com Halteres.webp" },
+        { id: "l031", name: "Flexão de Braço", muscle: "Peito", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Flexão.webp" },
+        { id: "l032", name: "Flexão Diamante", muscle: "Peito", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Flexão diamante.webp" },
+        { id: "l033", name: "Crucifixo", muscle: "Peito", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Crucifixo com halteres.webp" },
+        
+        // === OMBRO ===
+        { id: "l034", name: "Desenvolvimento Militar", muscle: "Ombro", equip: "Barra", gif: "https://capuchowp-design.github.io/FitTracker/Desenvolvimento militar com barra.webp" },
+        { id: "l035", name: "Desenvolvimento com Halteres", muscle: "Ombro", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Desenvolvimento com Halteres.webp" },
+        { id: "l036", name: "Elevação Lateral", muscle: "Ombro", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Elevação Lateral.webp" },
+        { id: "l037", name: "Elevação Frontal", muscle: "Ombro", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Elevação Frontal Alternada Com Halteres.webp" },
+        
+        // === BRAÇOS (BÍCEPS / TRÍCEPS) ===
+        { id: "l038", name: "Rosca Direta", muscle: "Bíceps", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Rosca bíceps com halteres.webp" },
+        { id: "l039", name: "Rosca Martelo", muscle: "Bíceps", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Rosca martelo.webp" },
+        { id: "l040", name: "Rosca Concentrada", muscle: "Bíceps", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Rosca concentrada.webp" },
+        { id: "l041", name: "Tríceps Testa", muscle: "Tríceps", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Tríceps Testa com Barra.webp" },
+        { id: "l042", name: "Tríceps Coice", muscle: "Tríceps", equip: "Halteres", gif: "https://capuchowp-design.github.io/FitTracker/Tríceps Coice com Halteres.webp" },
+        { id: "l043", name: "Mergulho no Banco", muscle: "Tríceps", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Mergulho no Banco.webp" },
+        
+        // === ABDÔMEN ===
+        { id: "l044", name: "Abdominal", muscle: "Abdômen", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Abdominal.webp" },
+        { id: "l045", name: "Prancha", muscle: "Abdômen", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Prancha.webp" },
+        { id: "l046", name: "Elevação de Pernas", muscle: "Abdômen", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Elevação de Pernas.webp" },
+        { id: "l047", name: "Abdominal Infra", muscle: "Abdômen", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Abdominal Infra.webp" },
+        { id: "l048", name: "Superman", muscle: "Abdômen", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Superman.webp" },
+        
+        // === PANTURRILHA ===
+        { id: "l049", name: "Panturrilha em Pé", muscle: "Panturrilha", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Panturrilha em Pé.webp" },
+        { id: "l050", name: "Panturrilha no Degrau", muscle: "Panturrilha", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Panturrilha no Degrau.webp" },
+        { id: "l051", name: "Elevação de Panturrilhas", muscle: "Panturrilha", equip: "Corpo Livre", gif: "https://capuchowp-design.github.io/FitTracker/Elevação de Panturrilhas.webp" }
+    ];
+
+    // ── Preset Workouts ────────────────────────────────────────────────────────
+    const PRESET_WORKOUTS = [
+        {id:"halteres", name:"Full Body — Halteres", icon:"🏋️", exercises:[
+            {libId:"l003", sets:4, reps:"15 reps cada perna", xp:20},
+            {libId:"l017", sets:4, reps:"12 reps", xp:20},
+            {libId:"l050", sets:4, reps:"20 reps", xp:20},
+            {libId:"l024", sets:4, reps:"15 reps", xp:20},
+            {libId:"l036", sets:4, reps:"15 reps", xp:20},
+            {libId:"l029", sets:1, reps:"15 reps", xp:5}
+        ]},
+        {id:"barra", name:"Full Body — Barra", icon:"🏋️‍♂️", exercises:[
+            {libId:"l004", sets:4, reps:"12 reps", xp:20},
+            {libId:"l016", sets:4, reps:"10 reps", xp:20},
+            {libId:"l050", sets:4, reps:"20 reps", xp:20},
+            {libId:"l025", sets:4, reps:"12 reps", xp:20},
+            {libId:"l034", sets:4, reps:"12 reps", xp:20},
+            {libId:"l030", sets:1, reps:"12 reps", xp:5}
+        ]},
+        {id:"bodyweight", name:"Full Body — Peso Corporal", icon:"💪", exercises:[
+            {libId:"l001", sets:4, reps:"20 reps", xp:20},
+            {libId:"l018", sets:4, reps:"20 reps", xp:20},
+            {libId:"l049", sets:4, reps:"25 reps", xp:20},
+            {libId:"l028", sets:4, reps:"15 reps", xp:20},
+            {libId:"l031", sets:4, reps:"15 reps", xp:20},
+            {libId:"l032", sets:1, reps:"10 reps", xp:5}
+        ]}
+    ];
+
+    // ── Active workout (loaded from preset or custom) ──────────────────────────
+        const EXERCISES = [
+        { id:1, name:'Agachamento Búlgaro', sets:4, reps:'15 reps cada perna', icon:'🦵', xp:10, img:'https://capuchowp-design.github.io/FitTracker/Agachamento Búlgaro.webp' },
+        { id:2, name:'Panturrilha no Degrau', sets:4, reps:'20 reps', icon:'🦶', xp:8,  img:'https://capuchowp-design.github.io/FitTracker/Panturrilha no Degrau.webp' },
+        { id:3, name:'Remada Curvada',       sets:3, reps:'15 reps', icon:'💪', xp:10, img:'https://capuchowp-design.github.io/FitTracker/Remada Curvada.webp' },
+        { id:4, name:'Elevação Lateral',     sets:4, reps:'15 reps', icon:'🏋️', xp:8,  img:'https://capuchowp-design.github.io/FitTracker/Elevação Lateral.webp' },
+        { id:5, name:'Supino Reto',          sets:1, reps:'15 reps', icon:'🏋️‍♂️', xp:8,  img:'https://capuchowp-design.github.io/FitTracker/Supino Reto.webp' }
+    ];
+    
+    const KEGEL_ITEMS = [
+        { id: 'k1', label: '10 Contrações Rápidas', detail: 'Alternar: 1s contração / 1s relaxamento × 10 reps', work: 1, rest: 1, reps: 10 },
+        { id: 'k2', label: '10 Contrações Lentas', detail: 'Alternar: 5s contração / 5s relaxamento × 10 reps', work: 5, rest: 5, reps: 10 },
+        { id: 'k3', label: 'Elevador Pélvico', detail: '30s contração (leve→máx→leve) + 30s descanso × 3 séries', work: 30, rest: 30, reps: 3, phases: ['🟡 Contração leve (0–10s)', '🔴 Contração máxima (10–20s)', '🟡 Contração leve (20–30s)'] }
+    ];
+    const MASSETER_ITEMS = [
+        { id: 'm1', label: 'Isometria Masseter', detail: 'Alternar: 10s mordida firme / 5s relaxamento × 5 reps', work: 10, rest: 5, reps: 5 },
+        { id: 'm2', label: 'Beijo para o Teto', detail: 'Alternar: 3s esticar pescoço / 3s relaxar × 10 reps', work: 3, rest: 3, reps: 10 }
+    ];
+    
+    const DAYS = [
+        { label: 'Seg', type: 'treino', key: 'seg' },
+        { label: 'Ter', type: 'corda', key: 'ter' },
+        { label: 'Qua', type: 'treino', key: 'qua' },
+        { label: 'Qui', type: 'corda', key: 'qui' },
+        { label: 'Sex', type: 'treino', key: 'sex' },
+        { label: 'Sáb', type: 'corda', key: 'sab' },
+        { label: 'Dom', type: 'descanso', key: 'dom' }
+    ];
+    
+    // Estado global
+    let state = {
+        dark: true,
+        xp: 0,
+        level: 1,
+        streak: 0,
+        doneDays: { seg: false, ter: false, qua: false, qui: false, sex: false, sab: false, dom: false },
+        doneExercises: new Set(),
+        doneSets: {},
+        kegelDone: new Set(),
+        masseterDone: new Set(),
+        historico: [],
+        // Cordas
+        cordaRunning: false,
+        cordaInterval: null,
+        cordaPhase: 'work', // work ou rest
+        cordaCycle: 0,
+        cordaTimeLeft: 45,
+        cordaMaxTime: 45,
+        cordaTotalCycles: 15,
+        // Aux timers (Kegel + Masseter)
+        auxTimers: {},      // { id: { interval, timeLeft, maxTime, running } }
+        lastResetDate: ''   // tracks daily reset
+    };
+    
+    // ======================== SONS ========================
+    function playBeep() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            oscillator.connect(gain);
+            gain.connect(audioCtx.destination);
+            oscillator.frequency.value = 880;
+            gain.gain.value = 0.3;
+            oscillator.start();
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+            oscillator.stop(audioCtx.currentTime + 0.3);
+        } catch(e) { console.log('Áudio não suportado'); }
+    }
+    
+    function playFinalBeep() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            oscillator.connect(gain);
+            gain.connect(audioCtx.destination);
+            oscillator.frequency.value = 440;
+            gain.gain.value = 0.4;
+            oscillator.start();
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.8);
+            oscillator.stop(audioCtx.currentTime + 0.8);
+            
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
+            osc2.connect(gain2);
+            gain2.connect(audioCtx.destination);
+            osc2.frequency.value = 880;
+            gain2.gain.value = 0.4;
+            osc2.start(audioCtx.currentTime + 0.2);
+            gain2.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.9);
+            osc2.stop(audioCtx.currentTime + 0.9);
+        } catch(e) { console.log('Áudio não suportado'); }
+    }
+    
+    // ======================== HELPERS ========================
+    function showNotif(msg) {
+        const el = document.getElementById('notif');
+        el.textContent = msg;
+        el.style.display = 'block';
+        setTimeout(() => el.style.display = 'none', 2500);
+    }
+    
+    function addXP(amount) {
+        state.xp += amount;
+        let needed = state.level * 500;
+        while (state.xp >= needed) {
+            state.xp -= needed;
+            state.level++;
+            needed = state.level * 500;
+            showNotif(`🎉 UP! Nível ${state.level} alcançado!`);
+        }
+        updateXPUI();
+        saveState();
+    }
+    
+    function updateXPUI() {
+        document.getElementById('xpText').innerText = `${state.xp} / ${state.level*500} XP`;
+        document.getElementById('levelBadge').innerHTML = `Nível ${state.level}`;
+        const pct = (state.xp / (state.level*500)) * 100;
+        document.getElementById('xpFill').style.width = `${Math.min(100, pct)}%`;
+        document.getElementById('streakBadge').innerHTML = `🔥 ${state.streak} dias`;
+    }
+    
+    function updateStreak() {
+        let consec = 0;
+        for (let d of DAYS) {
+            if ((d.type === 'treino' || d.type === 'corda') && state.doneDays[d.key]) consec++;
+            else if ((d.type === 'treino' || d.type === 'corda') && !state.doneDays[d.key]) break;
+        }
+        state.streak = consec;
+        updateXPUI();
+        saveState();
+    }
+    
+    // ======================== RENDERIZAÇÃO ========================
+    function buildWeek() {
+        const container = document.getElementById('weekGrid');
+        container.innerHTML = '';
+        DAYS.forEach(day => {
+            const div = document.createElement('div');
+            div.className = 'day-card';
+            if (state.doneDays[day.key]) div.classList.add('done');
+            else if (day.type === 'descanso') div.classList.add('rest');
+            else if (day.type === 'corda') div.classList.add('corda');
+            
+            const dayTag = day.type === 'treino' ? 'A' : (day.type === 'corda' ? '🪢' : '⛔');
+            div.innerHTML = `<div class="day-name">${day.label}</div><div class="day-tag">${dayTag}</div>`;
+            
+            if ((day.type === 'treino' || day.type === 'corda') && !state.doneDays[day.key]) {
+                div.style.cursor = 'pointer';
+                div.onclick = () => { 
+                    if(confirm(`Marcar ${day.label} como concluído? +50 XP`)) { 
+                        state.doneDays[day.key]=true; 
+                        addXP(50); 
+                        buildWeek(); 
+                        updateStreak(); 
+                    } 
+                };
+            }
+            container.appendChild(div);
+        });
+    }
+    
+    function buildExercises() {
+        const container = document.getElementById('exerciseList');
+        container.innerHTML = '';
+        EXERCISES.forEach(ex => {
+            const done = state.doneExercises.has(ex.id);
+            const setsDone = state.doneSets[ex.id] || 0;
+            const percent = (setsDone / ex.sets) * 100;
+            const div = document.createElement('div');
+            div.className = 'exercise-card';
+            div.innerHTML = `
+                <img class="ex-icon-img" src="${ex.img}" alt="${ex.name}">
+                <div class="ex-info">
+                    <div class="ex-name">${ex.name}</div>
+                    <div class="ex-sets">${setsDone}/${ex.sets} séries · ${ex.reps}</div>
+                    <div class="progress-mini"><div class="progress-mini-fill" style="width:${percent}%"></div></div>
+                </div>
+                <div class="ex-check ${done ? 'checked' : ''}">${done ? '✓' : ''}</div>
+            `;
+            if (!done) div.onclick = () => completeExerciseSet(ex);
+            container.appendChild(div);
+        });
+    }
+    
+    function completeExerciseSet(ex) {
+        const doneCount = state.doneSets[ex.id] || 0;
+        if (doneCount >= ex.sets) return;
+        
+        state.doneSets[ex.id] = doneCount + 1;
+        addXP(ex.xp); // addXP already calls saveState
+        
+        if (state.doneSets[ex.id] === ex.sets) {
+            state.doneExercises.add(ex.id);
+            showNotif(`✅ ${ex.name} completo! +${ex.xp * ex.sets} XP total`);
+        } else {
+            showNotif(`✅ Série ${doneCount + 1}/${ex.sets} do ${ex.name} concluída! +${ex.xp} XP`);
+        }
+        
+        buildExercises();
+        checkWorkoutComplete();
+    }
+    
+    function checkWorkoutComplete() {
+        const allDone = EXERCISES.every(ex => state.doneExercises.has(ex.id));
+        if (allDone) {
+            const todayKey = DAYS[new Date().getDay() === 0 ? 6 : new Date().getDay()-1]?.key;
+            if (todayKey && !state.doneDays[todayKey] && DAYS.find(d=>d.key===todayKey)?.type === 'treino') {
+                state.doneDays[todayKey] = true;
+                addXP(80);
+                showNotif('🏆 Treino completo! Dia marcado +80 XP');
+                buildWeek();
+                updateStreak();
+            }
+        }
+    }
+    
+    // ======================== WORKOUT MODAL ========================
+    let wm = {
+        exIndex: 0,       // current exercise index in EXERCISES
+        setIndex: 0,      // sets done for current exercise in this session
+        restInterval: null,
+        restTimeLeft: 60,
+        restMaxTime: 60,
+        restMode: false
+    };
+
+    let REST_TIME_DEFAULT = 60; // editável pelo usuário
+
+    function startFullWorkout() {
+        if (EXERCISES.every(ex => state.doneExercises.has(ex.id))) {
+            showNotif('Treino já finalizado hoje!');
+            return;
+        }
+        // Find first incomplete exercise
+        wm.exIndex = EXERCISES.findIndex(ex => !state.doneExercises.has(ex.id));
+        wm.setIndex = state.doneSets[EXERCISES[wm.exIndex].id] || 0;
+        openWorkoutModal();
+    }
+
+    function openWorkoutModal() {
+        stopWmRest();
+        wm.restMode = false;
+        document.getElementById('workoutModal').style.display = 'flex';
+        document.getElementById('wmExerciseView').style.display = 'block';
+        document.getElementById('wmRestView').style.display = 'none';
+        renderWmExercise();
+    }
+
+    function closeWorkoutModal() {
+        stopWmRest();
+        document.getElementById('workoutModal').style.display = 'none';
+        buildExercises();
+    }
+
+    function renderWmExercise() {
+        const ex = EXERCISES[wm.exIndex];
+        const setsDone = state.doneSets[ex.id] || 0;
+        document.getElementById('wmTitle').textContent = ex.name;
+        document.getElementById('wmProgress').textContent = `${wm.exIndex + 1} / ${EXERCISES.length}`;
+        document.getElementById('wmExImg').src = ex.img;
+        document.getElementById('wmExImg').alt = ex.name;
+        document.getElementById('wmExName').textContent = ex.name;
+        document.getElementById('wmExSets').textContent = `${setsDone}/${ex.sets} séries · ${ex.reps}`;
+
+        // Set dots
+        const dotsEl = document.getElementById('wmSetDots');
+        dotsEl.innerHTML = '';
+        for (let i = 1; i <= ex.sets; i++) {
+            const d = document.createElement('div');
+            d.className = 'set-dot';
+            if (i <= setsDone) d.classList.add('done');
+            else if (i === setsDone + 1) d.classList.add('active');
+            d.textContent = i;
+            dotsEl.appendChild(d);
+        }
+
+        const badge = document.getElementById('wmPhaseBadge');
+        badge.className = 'wm-phase-badge wm-phase-work';
+        badge.textContent = '💪 EXECUTE A SÉRIE';
+
+        const btn = document.getElementById('wmCompleteBtn');
+        if (setsDone >= ex.sets) {
+            btn.textContent = '➡️ Próximo Exercício';
+            btn.onclick = wmNextExercise;
+        } else {
+            btn.textContent = '✅ Concluir Série';
+            btn.onclick = wmCompleteSet;
+        }
+    }
+
+    function wmCompleteSet() {
+        const ex = EXERCISES[wm.exIndex];
+        completeExerciseSet(ex);
+        renderWmExercise();
+
+        const setsDone = state.doneSets[ex.id] || 0;
+        const allExDone = state.doneExercises.has(ex.id);
+
+        if (allExDone) {
+            // Move to next or finish
+            wmNextExercise();
+        } else {
+            // Start rest timer between sets
+            const restTime = REST_TIME_DEFAULT;
+            startWmRest(restTime, ex.name);
+        }
+    }
+
+    function wmNextExercise() {
+        stopWmRest();
+        const nextIdx = EXERCISES.findIndex((ex, i) => i > wm.exIndex && !state.doneExercises.has(ex.id));
+        if (nextIdx === -1) {
+            // All done!
+            closeWorkoutModal();
+            showNotif('🏆 Treino completo! Parabéns!');
+            checkWorkoutComplete();
+            return;
+        }
+        wm.exIndex = nextIdx;
+        openWorkoutModal();
+    }
+
+    function startWmRest(seconds, nextLabel) {
+        wm.restMode = true;
+        wm.restTimeLeft = seconds;
+        wm.restMaxTime = seconds;
+        document.getElementById('wmExerciseView').style.display = 'none';
+        document.getElementById('wmRestView').style.display = 'block';
+        document.getElementById('wmRestLabel').textContent = `Série ${(state.doneSets[EXERCISES[wm.exIndex].id]||0) + 1}/${EXERCISES[wm.exIndex].sets} a seguir`;
+        updateWmRestDisplay();
+        // sync input
+        const editEl = document.getElementById('wmRestEdit');
+        if (editEl) editEl.value = seconds;
+        stopWmRest();
+        wm.restInterval = setInterval(wmRestTick, 1000);
+    }
+
+    function wmRestTick() {
+        if (wm.restTimeLeft === 1) playFinalBeep();
+        wm.restTimeLeft--;
+        updateWmRestDisplay();
+        if (wm.restTimeLeft <= 0) {
+            stopWmRest();
+            playFinalBeep();
+            // Back to exercise
+            wm.restMode = false;
+            document.getElementById('wmExerciseView').style.display = 'block';
+            document.getElementById('wmRestView').style.display = 'none';
+            renderWmExercise();
+        }
+    }
+
+    function updateWmRestDisplay() {
+        const s = wm.restTimeLeft;
+        document.getElementById('wmRestDigits').textContent = s;
+        const circ = 376.99;
+        const pct = s / wm.restMaxTime;
+        document.getElementById('wmRestProgress').style.strokeDashoffset = circ * (1 - pct);
+    }
+
+    function wmSkipRest() {
+        stopWmRest();
+        wm.restMode = false;
+        document.getElementById('wmExerciseView').style.display = 'block';
+        document.getElementById('wmRestView').style.display = 'none';
+        renderWmExercise();
+    }
+
+    function wmUpdateRestTime(val) {
+        const v = Math.max(10, Math.min(300, parseInt(val) || 60));
+        REST_TIME_DEFAULT = v;
+        document.getElementById('wmRestEdit').value = v;
+        // If rest is running, adjust remaining proportionally only if not started yet
+        // Just update max so ring scales correctly
+        wm.restMaxTime = v;
+    }
+
+    function stopWmRest() {
+        if (wm.restInterval) { clearInterval(wm.restInterval); wm.restInterval = null; }
+    }
+    
+    // ======================== CRONÔMETRO DA CORDA ========================
+    function updateCordaDisplay() {
+        const m = Math.floor(state.cordaTimeLeft / 60);
+        const s = state.cordaTimeLeft % 60;
+        document.getElementById('cordaTimerDigits').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        
+        const circumference = 490.09;
+        const percent = state.cordaTimeLeft / state.cordaMaxTime;
+        const offset = circumference * (1 - percent);
+        const progressCircle = document.getElementById('cordaTimerProgress');
+        if (progressCircle) progressCircle.style.strokeDashoffset = offset;
+        
+        document.getElementById('cordaCycleCount').innerText = state.cordaCycle;
+        document.getElementById('cordaRemaining').innerText = state.cordaTotalCycles - state.cordaCycle;
+        
+        const totalMinutes = Math.floor((state.cordaCycle * 60) / 60);
+        const totalSeconds = (state.cordaCycle * 60) % 60;
+        document.getElementById('cordaTotalTime').innerText = `${totalMinutes}:${totalSeconds.toString().padStart(2,'0')}`;
+        
+        // Atualizar dots
+        const dotsContainer = document.getElementById('cordaSetDots');
+        dotsContainer.innerHTML = '';
+        for (let i = 1; i <= state.cordaTotalCycles; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'set-dot';
+            if (i <= state.cordaCycle) dot.classList.add('done');
+            if (i === state.cordaCycle + 1 && state.cordaRunning) dot.classList.add('active');
+            dot.textContent = i;
+            dotsContainer.appendChild(dot);
+        }
+        
+        // Fase
+        const phaseEl = document.getElementById('cordaPhase');
+        const statusEl = document.getElementById('cordaStatus');
+        if (state.cordaPhase === 'work') {
+            phaseEl.innerHTML = '🏃‍♂️ TREINO - 45s';
+            phaseEl.className = 'timer-phase phase-work';
+            statusEl.innerHTML = `Série ${state.cordaCycle + 1} de ${state.cordaTotalCycles}`;
+        } else {
+            phaseEl.innerHTML = '💨 DESCANSO - 15s';
+            phaseEl.className = 'timer-phase phase-rest';
+            statusEl.innerHTML = `Descanso - Próxima série ${state.cordaCycle + 1}`;
+        }
+    }
+    
+    function cordaTick() {
+        if (!state.cordaRunning) return;
+        
+        state.cordaTimeLeft--;
+        updateCordaDisplay();
+        
+        if (state.cordaTimeLeft === 1) playFinalBeep();
+        
+        if (state.cordaTimeLeft <= 0) {
+            // Mudança de fase
+            if (state.cordaPhase === 'work') {
+                // Terminou treino, vai para descanso
+                state.cordaPhase = 'rest';
+                state.cordaTimeLeft = 15;
+                state.cordaMaxTime = 15;
+                playFinalBeep();
+                showNotif(`💨 Descanso de 15s! Série ${state.cordaCycle + 1} concluída`);
+            } else {
+                // Terminou descanso, vai para próximo treino
+                state.cordaCycle++;
+                state.cordaPhase = 'work';
+                state.cordaTimeLeft = 45;
+                state.cordaMaxTime = 45;
+                playFinalBeep();
+                
+                if (state.cordaCycle >= state.cordaTotalCycles) {
+                    // Treino completo!
+                    stopCordaTimer();
+                    showNotif(`🎉 Treino de cordas completo! ${state.cordaTotalCycles} ciclos finalizados! +100 XP`);
+                    addXP(100);
+                    saveState();
+                    
+                    // Marcar dia como concluído
+                    const todayKey = DAYS[new Date().getDay() === 0 ? 6 : new Date().getDay()-1]?.key;
+                    if (todayKey && !state.doneDays[todayKey] && DAYS.find(d=>d.key===todayKey)?.type === 'corda') {
+                        state.doneDays[todayKey] = true;
+                        buildWeek();
+                        updateStreak();
+                    }
+                } else {
+                    showNotif(`🏃‍♂️ Série ${state.cordaCycle + 1}/${state.cordaTotalCycles} - 45s de salto!`);
+                }
+            }
+            updateCordaDisplay();
+        }
+    }
+    
+    function toggleCordaTimer() {
+        const btn = document.getElementById('cordaStartBtn');
+        if (state.cordaRunning) {
+            stopCordaTimer();
+            btn.innerHTML = '▶️ Iniciar Treino';
+            btn.classList.remove('btn-corda');
+            btn.classList.add('btn-primary');
+        } else {
+            startCordaTimer();
+            btn.innerHTML = '⏸️ Pausar';
+            btn.classList.add('btn-corda');
+            btn.classList.remove('btn-primary');
+        }
+    }
+    
+    function startCordaTimer() {
+        if (state.cordaInterval) clearInterval(state.cordaInterval);
+        state.cordaRunning = true;
+        state.cordaInterval = setInterval(cordaTick, 1000);
+    }
+    
+    function stopCordaTimer() {
+        state.cordaRunning = false;
+        if (state.cordaInterval) {
+            clearInterval(state.cordaInterval);
+            state.cordaInterval = null;
+        }
+    }
+    
+    function resetCordaTimer() {
+        stopCordaTimer();
+        state.cordaPhase = 'work';
+        state.cordaCycle = 0;
+        state.cordaTimeLeft = 45;
+        state.cordaMaxTime = 45;
+        updateCordaDisplay();
+        document.getElementById('cordaStartBtn').innerHTML = '▶️ Iniciar Treino';
+        document.getElementById('cordaStartBtn').classList.remove('btn-corda');
+        document.getElementById('cordaStartBtn').classList.add('btn-primary');
+        showNotif('Treino de cordas reiniciado');
+    }
+    
+    // Auxiliares
+    function buildAuxiliary(item, doneSet) {
+        const done = doneSet.has(item.id);
+        const t    = state.auxTimers[item.id];
+        const running   = t && t.running;
+        const phase     = t ? t.phase   : 'work';
+        const repsDone  = t ? t.repsDone : 0;
+        const isWork    = phase === 'work';
+        const timeLeft  = t ? t.timeLeft : item.work;
+
+        // Phase label for k3 sub-phases
+        let phaseLabel = isWork ? '🔥 CONTRAÇÃO' : '💨 DESCANSO';
+        if (isWork && item.phases && t) {
+            const elapsed = item.work - t.timeLeft;
+            const third   = item.work / 3;
+            if      (elapsed < third)       phaseLabel = '🟡 LEVE';
+            else if (elapsed < third * 2)   phaseLabel = '🔴 MÁXIMA';
+            else                            phaseLabel = '🟡 LEVE';
+        }
+
+        // Info-only item (no timer)
+        if (!item.work) {
+            const div = document.createElement('div');
+            div.className = 'aux-simple' + (done ? ' aux-done' : '');
+            div.id = 'aux-card-' + item.id;
+            div.innerHTML = `
+                <div class="aux-check-box ${done ? 'done' : ''}" onclick="toggleAuxDone('${item.id}',event)">${done ? '✓' : ''}</div>
+                <div class="aux-text">
+                    <div class="aux-label ${done ? 'striked' : ''}">${item.label}</div>
+                    <div class="aux-detail">${item.detail}</div>
+                </div>
+                <div class="aux-info-icon">ℹ️</div>`;
+            return div;
+        }
+
+        // Hidden timer ticks in background — only text is shown
+        const mins = String(Math.floor(timeLeft / 60)).padStart(2,'0');
+        const secs = String(timeLeft % 60).padStart(2,'0');
+
+        const div = document.createElement('div');
+        div.className = 'aux-simple' + (done ? ' aux-done' : '');
+        div.id = 'aux-card-' + item.id;
+        div.innerHTML = `
+            <div class="aux-check-box ${done ? 'done' : ''}" onclick="toggleAuxDone('${item.id}',event)">${done ? '✓' : ''}</div>
+            <div class="aux-text" style="flex:1">
+                <div class="aux-label ${done ? 'striked' : ''}">${item.label}</div>
+                <div class="aux-detail">${item.detail}</div>
+                ${!done ? `
+                <div class="aux-status-row">
+                    <span class="aux-phase-text" id="aux-phase-${item.id}"
+                        style="color:${isWork ? 'var(--accent)' : 'var(--warn)'}; font-weight:700; font-size:13px;">
+                        ${phaseLabel}
+                    </span>
+                    <span class="aux-digits-text" id="aux-digits-${item.id}"
+                        style="font-size:13px; font-weight:700; color:var(--text); margin-left:8px;">
+                        ${mins}:${secs}
+                    </span>
+                    <span style="font-size:12px; color:var(--muted); margin-left:8px;">
+                        Rep <span id="aux-series-${item.id}">${repsDone + 1}</span>/${item.reps}
+                    </span>
+                </div>
+                <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+                    <button class="btn-aux-mini ${running ? 'btn-aux-mini-pause' : ''}"
+                        id="aux-btn-${item.id}" onclick="toggleAuxTimer('${item.id}',event)">
+                        ${running ? '⏸ Pausar' : (t && t.repsDone > 0 ? '▶ Continuar' : '▶ Iniciar')}
+                    </button>
+                    <button class="btn-aux-mini-reset" onclick="resetAuxTimer('${item.id}',event)">↺</button>
+                </div>` : '<div style="color:var(--success);font-weight:700;font-size:13px;margin-top:4px;">✅ Concluído!</div>'}
+            </div>`;
+        return div;
+    }
+
+
+    function buildAuxiliaries() {
+        const kegelDiv = document.getElementById('kegelList');
+        kegelDiv.innerHTML = '';
+        KEGEL_ITEMS.forEach(k => kegelDiv.appendChild(buildAuxiliary(k, state.kegelDone)));
+        const massDiv = document.getElementById('masseterList');
+        massDiv.innerHTML = '';
+        MASSETER_ITEMS.forEach(m => massDiv.appendChild(buildAuxiliary(m, state.masseterDone)));
+    }
+
+    function toggleAuxDone(id, e) {
+        e.stopPropagation();
+        const isKegel = id.startsWith('k');
+        const doneSet = isKegel ? state.kegelDone : state.masseterDone;
+        const xp = isKegel ? 10 : 8;
+        const item = [...KEGEL_ITEMS, ...MASSETER_ITEMS].find(x => x.id === id);
+        if (doneSet.has(id)) { doneSet.delete(id); addXP(-xp); }
+        else { stopAuxTimer(id); doneSet.add(id); addXP(xp); showNotif(`+${xp} XP — ${item.label}`); }
+        buildAuxiliaries();
+        saveState();
+    }
+
+    function toggleAuxTimer(id, e) {
+        e.stopPropagation();
+        const t = state.auxTimers[id];
+        if (t && t.running) stopAuxTimer(id);
+        else startAuxTimer(id);
+        buildAuxiliaries();
+    }
+
+    function resetAuxTimer(id, e) {
+        e.stopPropagation();
+        stopAuxTimer(id);
+        delete state.auxTimers[id];
+        buildAuxiliaries();
+    }
+
+    function startAuxTimer(id) {
+        const item = [...KEGEL_ITEMS, ...MASSETER_ITEMS].find(x => x.id === id);
+        if (!item || !item.work) return;
+        const existing = state.auxTimers[id];
+        if (!existing) {
+            state.auxTimers[id] = { phase: 'work', timeLeft: item.work, repsDone: 0, running: true, interval: null };
+        } else {
+            existing.running = true;
+        }
+        const t = state.auxTimers[id];
+        t.interval = setInterval(() => auxTick(id), 1000);
+    }
+
+    function auxTick(id) {
+        const item = [...KEGEL_ITEMS, ...MASSETER_ITEMS].find(x => x.id === id);
+        const t = state.auxTimers[id];
+        if (!t || !t.running || !item) return;
+
+        t.timeLeft--;
+
+        // Update text-only UI (no SVG ring)
+        const digits  = document.getElementById('aux-digits-' + id);
+        const series  = document.getElementById('aux-series-' + id);
+        const phaseEl = document.getElementById('aux-phase-'  + id);
+
+        if (digits) {
+            digits.textContent = String(Math.floor(t.timeLeft/60)).padStart(2,'0') + ':' + String(t.timeLeft%60).padStart(2,'0');
+        }
+        // Update sub-phase label for k3 (elevador)
+        if (t.phase === 'work' && item.phases && phaseEl) {
+            const elapsed = item.work - t.timeLeft;
+            const third = item.work / 3;
+            if      (elapsed < third)       { phaseEl.textContent = '🟡 LEVE';    phaseEl.style.color = '#f0c040'; }
+            else if (elapsed < third * 2)   { phaseEl.textContent = '🔴 MÁXIMA';  phaseEl.style.color = 'var(--danger)'; }
+            else                            { phaseEl.textContent = '🟡 LEVE';    phaseEl.style.color = '#f0c040'; }
+        }
+
+        if (t.timeLeft === 1) playFinalBeep();
+
+        if (t.timeLeft <= 0) {
+            if (t.phase === 'work') {
+                // Work done → switch to rest
+                t.phase = 'rest';
+                t.timeLeft = item.rest;
+                playFinalBeep();
+                if (phaseEl) { phaseEl.textContent = '💨 DESCANSO'; phaseEl.style.color = 'var(--warn)'; }
+                if (series)  series.textContent = 'Rep ' + (t.repsDone + 1) + ' / ' + item.reps;
+                showNotif('💨 Descanse ' + item.rest + 's');
+            } else {
+                // Rest done → next rep
+                t.repsDone++;
+                if (t.repsDone >= item.reps) {
+                    // All reps done!
+                    stopAuxTimer(id);
+                    const isKegel = id.startsWith('k');
+                    const doneSet = isKegel ? state.kegelDone : state.masseterDone;
+                    const xp = isKegel ? 10 : 8;
+                    if (!doneSet.has(id)) {
+                        doneSet.add(id);
+                        addXP(xp);
+                        showNotif('✅ +' + xp + ' XP — ' + item.label + ' completo!');
+                        saveState();
+                    }
+                    buildAuxiliaries();
+                    return;
+                }
+                // Next work phase
+                t.phase = 'work';
+                t.timeLeft = item.work;
+                playFinalBeep();
+                if (phaseEl) { phaseEl.textContent = '🔥 CONTRAÇÃO'; phaseEl.style.color = 'var(--accent)'; }
+                if (series)  series.textContent = 'Rep ' + (t.repsDone + 1) + ' / ' + item.reps;
+                showNotif('🔥 Rep ' + (t.repsDone + 1) + ' de ' + item.reps);
+            }
+        }
+    }
+
+    function stopAuxTimer(id) {
+        const t = state.auxTimers[id];
+        if (t) { clearInterval(t.interval); t.running = false; }
+    }
+    
+    // Medidas
+    function saveMeasure() {
+        const data       = document.getElementById('medData').value;
+        const peso       = parseFloat(document.getElementById('medPeso').value);
+        const cintura    = parseFloat(document.getElementById('medCintura').value);
+        const peito      = parseFloat(document.getElementById('medPeito').value);
+        const coxaD      = parseFloat(document.getElementById('medCoxaD').value);
+        const biceps     = parseFloat(document.getElementById('medBiceps').value);
+        const antebraco  = parseFloat(document.getElementById('medAntebraco').value);
+        const panturrilha= parseFloat(document.getElementById('medPanturrilha').value);
+        if (!data || !peso) { showNotif('Preencha data e peso'); return; }
+        state.historico.push({
+            data, peso,
+            cintura:     cintura     || 0,
+            peito:       peito       || 0,
+            coxa:        coxaD       || 0,
+            biceps:      biceps      || 0,
+            antebraco:   antebraco   || 0,
+            panturrilha: panturrilha || 0
+        });
+        state.historico.sort((a,b) => a.data.localeCompare(b.data));
+        renderHistorico();
+        addXP(15);
+        showNotif('Medidas salvas! +15 XP');
+        saveState();
+        // Limpar campos
+        ['medCintura','medPeito','medCoxaD','medBiceps','medAntebraco','medPanturrilha','medPeso'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
+    }
+    
+    function renderHistorico() {
+        const tbody = document.getElementById('historyBody');
+        tbody.innerHTML = '';
+        const list = [...state.historico].reverse();
+        const cm = v => v ? v + 'cm' : '-';
+        list.forEach((r, idx, arr) => {
+            const prev = arr[idx+1];
+            const delta = prev ? (r.peso - prev.peso).toFixed(1) : null;
+            const deltaColor = delta && parseFloat(delta) < 0 ? '#4caf87' : '#f0c040';
+            const deltaHtml = delta ? (parseFloat(delta) >= 0 ? `+${delta}kg` : `${delta}kg`) : '—';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${r.data.slice(5)}</td>
+                <td>${r.peso}kg</td>
+                <td>${cm(r.cintura)}</td>
+                <td>${cm(r.peito)}</td>
+                <td>${cm(r.coxa||r.coxaD)}</td>
+                <td>${cm(r.biceps)}</td>
+                <td>${cm(r.antebraco)}</td>
+                <td>${cm(r.panturrilha)}</td>
+                <td style="color:${deltaColor}">${deltaHtml}</td>`;
+            tbody.appendChild(tr);
+        });
+    }
+    
+    // ======================== ANIMAÇÃO ========================
+    let animFrame = null;
+    let animT = 0;
+    let animRunning = true;
+    
+    function drawBulgarian(t) {
+        const canvas = document.getElementById('bulgarianCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = 280, h = 200;
+        ctx.clearRect(0, 0, w, h);
+        
+        const isDark = state.dark;
+        const bg = isDark ? '#1e2235' : '#ffffff';
+        const fg = isDark ? '#f0f2ff' : '#1a1d2e';
+        
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, w, h);
+        
+        const phase = Math.sin(t);
+        const isDown = Math.cos(t) < 0;
+        const isHold = Math.abs(phase) < 0.15 && Math.cos(t) < 0;
+        
+        const kneeBend = 0.3 + 0.5 * ((phase + 1) / 2);
+        
+        ctx.fillStyle = isDark ? '#3a3f5c' : '#c5cce8';
+        ctx.beginPath();
+        ctx.roundRect(220, 100, 50, 12, 6);
+        ctx.fill();
+        
+        ctx.strokeStyle = '#5de0c5';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(235, 105);
+        ctx.lineTo(215, 125 + 15 * kneeBend);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(215, 125 + 15 * kneeBend);
+        ctx.lineTo(155, 125 + 20 * kneeBend);
+        ctx.stroke();
+        
+        ctx.strokeStyle = '#7c6ef2';
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(150, 125 + 20 * kneeBend);
+        ctx.lineTo(125, 160 + 25 * kneeBend);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(125, 160 + 25 * kneeBend);
+        ctx.lineTo(105, 175);
+        ctx.stroke();
+        
+        ctx.strokeStyle = fg;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(150, 125 + 20 * kneeBend);
+        ctx.lineTo(135, 70);
+        ctx.stroke();
+        
+        ctx.fillStyle = fg;
+        ctx.beginPath();
+        ctx.arc(130, 62, 12, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)';
+        ctx.beginPath();
+        ctx.moveTo(20, 175);
+        ctx.lineTo(260, 175);
+        ctx.stroke();
+        
+        const faseSpan = document.getElementById('faseAnim');
+        if (isHold) {
+            faseSpan.innerHTML = '⏸️ Ponto mais baixo - Contraia o glúteo!';
+            faseSpan.className = 'fase-label fase-hold';
+        } else if (isDown) {
+            faseSpan.innerHTML = '⬇️ Descida - 3 segundos, controlado';
+            faseSpan.className = 'fase-label fase-down';
+        } else {
+            faseSpan.innerHTML = '⬆️ Subida - Empurre o calcanhar!';
+            faseSpan.className = 'fase-label fase-up';
+        }
+    }
+    
+    function animateBulgarian() {
+        if (!animRunning) return;
+        animT += 0.012;
+        drawBulgarian(animT);
+        animFrame = requestAnimationFrame(animateBulgarian);
+    }
+    
+    function toggleAnim() {
+        animRunning = !animRunning;
+        document.getElementById('animBtn').innerHTML = animRunning ? '⏸️ Pausar' : '▶️ Continuar';
+        if (animRunning) animateBulgarian();
+    }
+    
+    function resetAnim() {
+        animT = 0;
+        if (!animRunning) {
+            animRunning = true;
+            document.getElementById('animBtn').innerHTML = '⏸️ Pausar';
+            animateBulgarian();
+        }
+        drawBulgarian(0);
+    }
+    
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+        CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+            if (w < 2 * r) r = w / 2;
+            if (h < 2 * r) r = h / 2;
+            this.moveTo(x+r, y);
+            this.lineTo(x+w-r, y);
+            this.quadraticCurveTo(x+w, y, x+w, y+r);
+            this.lineTo(x+w, y+h-r);
+            this.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+            this.lineTo(x+r, y+h);
+            this.quadraticCurveTo(x, y+h, x, y+h-r);
+            this.lineTo(x, y+r);
+            this.quadraticCurveTo(x, y, x+r, y);
+            return this;
+        };
+    }
+    
+    // Tabs e tema
+    function initTabs() {
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const target = tab.getAttribute('data-tab');
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById(target).classList.add('active');
+                
+                if (target === 'tecnica' && !animFrame) {
+                    animRunning = true;
+                    animateBulgarian();
+                }
+            });
+        });
+    }
+    
+    function toggleTheme() {
+        state.dark = !state.dark;
+        document.body.classList.toggle('light', !state.dark);
+        document.getElementById('app').classList.toggle('light', !state.dark);
+        document.querySelector('.theme-btn').innerHTML = state.dark ? '☀️' : '🌙';
+        drawBulgarian(animT);
+    }
+    
+    // Inicialização
+    // ======================== BIBLIOTECA ========================
+    let libFilterMuscle = 'Todos';
+
+    function filterLibrary() {
+        const q = (document.getElementById('libSearch')?.value || '').toLowerCase();
+        renderLibrary(q);
+    }
+
+    function renderLibrary(q) {
+        const container = document.getElementById('libList');
+        if (!container) return;
+        const filtered = EXERCISE_LIBRARY.filter(e =>
+            (libFilterMuscle === 'Todos' || e.muscle === libFilterMuscle) &&
+            (!q || e.name.toLowerCase().includes(q))
+        );
+        container.innerHTML = '';
+        if (filtered.length === 0) {
+            container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:32px;">Nenhum exercício encontrado</div>';
+            return;
+        }
+        filtered.forEach(ex => {
+            const div = document.createElement('div');
+            div.className = 'lib-card';
+            div.innerHTML = `
+                <img class="lib-gif" src="${ex.gif}" alt="${ex.name}" loading="lazy">
+                <div class="lib-info">
+                    <div class="lib-name">${ex.name}</div>
+                    <div class="lib-tags">
+                        <span class="lib-tag">${ex.muscle}</span>
+                        <span class="lib-tag lib-tag-equip">${ex.equip}</span>
+                    </div>
+                </div>`;
+            container.appendChild(div);
+        });
+    }
+
+    function initLibraryFilters() {
+        const row = document.getElementById('libFilters');
+        if (!row) return;
+        row.querySelectorAll('.lib-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                row.querySelectorAll('.lib-filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                libFilterMuscle = btn.dataset.muscle;
+                filterLibrary();
+            });
+        });
+        // Activate "Todos" by default
+        const first = row.querySelector('.lib-filter-btn');
+        if (first) first.classList.add('active');
+        renderLibrary('');
+    }
+
+    // ======================== TREINOS PRÉ-MONTADOS ========================
+    function showWorkoutPicker() {
+        // Remove existing modal if any
+        const old = document.getElementById('workout-picker-modal');
+        if (old) old.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'workout-picker-modal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-box">
+                <div class="modal-title">🏋️ Escolher Treino</div>
+                <div class="modal-subtitle">Selecione um treino pré-montado ou crie o seu</div>
+                <div id="preset-list"></div>
+                <button class="btn-secondary" style="margin-top:8px;width:100%"
+                    onclick="openCustomWorkoutBuilder()">➕ Criar Treino Personalizado</button>
+                <button class="btn-ghost" style="margin-top:8px;width:100%"
+                    onclick="document.getElementById('workout-picker-modal').remove()">Cancelar</button>
+            </div>`;
+
+        const presetList = modal.querySelector('#preset-list');
+        PRESET_WORKOUTS.forEach(w => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-preset';
+            btn.innerHTML = `<span style="font-size:20px">${w.icon}</span><div><div style="font-weight:700">${w.name}</div><div style="font-size:12px;color:var(--muted)">${w.exercises.length} exercícios</div></div>`;
+            btn.onclick = () => { loadPresetWorkout(w); modal.remove(); };
+            presetList.appendChild(btn);
+        });
+
+        // Custom saved workouts
+        const saved = getSavedWorkouts();
+        if (saved.length > 0) {
+            const sep = document.createElement('div');
+            sep.style = 'font-size:12px;color:var(--muted);margin:12px 0 6px;font-weight:700;text-transform:uppercase;';
+            sep.textContent = 'Meus Treinos';
+            presetList.appendChild(sep);
+            saved.forEach(w => {
+                const row = document.createElement('div');
+                row.style = 'display:flex;gap:8px;align-items:center;';
+                const btn = document.createElement('button');
+                btn.className = 'btn-preset';
+                btn.style.flex = '1';
+                btn.innerHTML = `<span style="font-size:20px">📋</span><div><div style="font-weight:700">${w.name}</div><div style="font-size:12px;color:var(--muted)">${w.exercises.length} exercícios</div></div>`;
+                btn.onclick = () => { loadPresetWorkout(w); modal.remove(); };
+                const del = document.createElement('button');
+                del.className = 'btn-ghost';
+                del.style = 'padding:8px;font-size:16px;';
+                del.textContent = '🗑';
+                del.onclick = () => { deleteCustomWorkout(w.id); modal.remove(); showWorkoutPicker(); };
+                row.appendChild(btn);
+                row.appendChild(del);
+                presetList.appendChild(row);
+            });
+        }
+
+        document.body.appendChild(modal);
+    }
+
+    function loadPresetWorkout(preset) {
+        // Convert library IDs to full exercise objects
+        const exercises = preset.exercises.map((e, i) => {
+            const lib = EXERCISE_LIBRARY.find(l => l.id === e.libId) || {};
+            return {
+                id: 100 + i,
+                name: lib.name || e.libId,
+                sets: e.sets,
+                reps: e.reps,
+                xp: e.xp || e.sets * 5,
+                img: lib.gif || ''
+            };
+        });
+        // Update EXERCISES (overwrite for this session)
+        EXERCISES.length = 0;
+        exercises.forEach(e => EXERCISES.push(e));
+        // Reset doneSets for new workout
+        state.doneSets = {};
+        state.doneExercises = new Set();
+        buildExercises();
+        showNotif(`✅ Treino carregado: ${preset.name}`);
+        // Switch to treino tab
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.querySelector('[data-tab="treino"]').classList.add('active');
+        document.getElementById('treino').classList.add('active');
+    }
+
+    // ======================== TREINO PERSONALIZADO ========================
+    function getSavedWorkouts() {
+        try { return JSON.parse(localStorage.getItem('custom_workouts') || '[]'); } catch { return []; }
+    }
+    function saveCustomWorkout(w) {
+        const list = getSavedWorkouts();
+        list.push(w);
+        localStorage.setItem('custom_workouts', JSON.stringify(list));
+        if (window._fb && window._currentUid)
+            window._fb.saveData(window._currentUid, 'custom_workouts', list).catch(()=>{});
+    }
+    function deleteCustomWorkout(id) {
+        const list = getSavedWorkouts().filter(w => w.id !== id);
+        localStorage.setItem('custom_workouts', JSON.stringify(list));
+        if (window._fb && window._currentUid)
+            window._fb.saveData(window._currentUid, 'custom_workouts', list).catch(()=>{});
+    }
+
+    let customBuilderExercises = [];
+
+    function openCustomWorkoutBuilder() {
+        const old = document.getElementById('workout-builder-modal');
+        if (old) old.remove();
+        customBuilderExercises = [];
+
+        const muscles = ['Todos', ...new Set(EXERCISE_LIBRARY.map(e => e.muscle))];
+        const muscleBtns = muscles.map(m =>
+            `<button class="lib-filter-btn" data-muscle="${m}" onclick="builderFilter('${m}',this)">${m}</button>`
+        ).join('');
+
+        const modal = document.createElement('div');
+        modal.id = 'workout-builder-modal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-box" style="max-height:90vh;overflow-y:auto;">
+                <div class="modal-title">➕ Criar Treino</div>
+                <input type="text" id="customWorkoutName" placeholder="Nome do treino..."
+                    style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);
+                           background:var(--bg2);color:var(--text);font-size:14px;margin-bottom:12px;">
+                <div class="lib-filter-row" style="margin-bottom:10px;">${muscleBtns}</div>
+                <input type="text" id="builderSearch" placeholder="🔍 Buscar..."
+                    oninput="renderBuilderList()"
+                    style="width:100%;padding:8px 12px;border-radius:10px;border:1px solid var(--border);
+                           background:var(--bg2);color:var(--text);font-size:13px;margin-bottom:10px;">
+                <div id="builderList" style="max-height:35vh;overflow-y:auto;"></div>
+                <div style="font-size:12px;color:var(--muted);margin:10px 0 4px;font-weight:700;text-transform:uppercase;">
+                    Exercícios adicionados (<span id="builderCount">0</span>)
+                </div>
+                <div id="builderSelected" style="margin-bottom:12px;"></div>
+                <div style="display:flex;gap:8px;">
+                    <button class="btn-primary" style="flex:1" onclick="saveBuilderWorkout()">💾 Salvar Treino</button>
+                    <button class="btn-ghost" style="flex:1" onclick="document.getElementById('workout-builder-modal').remove()">Cancelar</button>
+                </div>
+            </div>`;
+        document.body.appendChild(modal);
+        // Activate first filter btn
+        modal.querySelector('.lib-filter-btn').classList.add('active');
+        renderBuilderList();
+    }
+
+    let builderFilterMuscle = 'Todos';
+    function builderFilter(muscle, btn) {
+        builderFilterMuscle = muscle;
+        document.querySelectorAll('#workout-builder-modal .lib-filter-btn')
+            .forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderBuilderList();
+    }
+
+    function renderBuilderList() {
+        const q = (document.getElementById('builderSearch')?.value || '').toLowerCase();
+        const container = document.getElementById('builderList');
+        if (!container) return;
+        const filtered = EXERCISE_LIBRARY.filter(e =>
+            (builderFilterMuscle === 'Todos' || e.muscle === builderFilterMuscle) &&
+            (!q || e.name.toLowerCase().includes(q))
+        );
+        container.innerHTML = '';
+        filtered.forEach(ex => {
+            const added = customBuilderExercises.find(e => e.libId === ex.id);
+            const div = document.createElement('div');
+            div.style = 'display:flex;align-items:center;gap:10px;padding:8px;background:var(--card);border-radius:10px;margin-bottom:6px;';
+            div.innerHTML = `
+                <img src="${ex.gif}" style="width:48px;height:48px;border-radius:8px;object-fit:cover;" loading="lazy">
+                <div style="flex:1">
+                    <div style="font-size:13px;font-weight:600;">${ex.name}</div>
+                    <div style="font-size:11px;color:var(--muted);">${ex.muscle} · ${ex.equip}</div>
+                </div>
+                <button class="btn-aux-mini ${added ? 'btn-aux-mini-pause' : ''}"
+                    onclick="toggleBuilderExercise('${ex.id}')">
+                    ${added ? '✓ Adicionado' : '+ Add'}
+                </button>`;
+            container.appendChild(div);
+        });
+    }
+
+    function toggleBuilderExercise(libId) {
+        const idx = customBuilderExercises.findIndex(e => e.libId === libId);
+        if (idx >= 0) {
+            customBuilderExercises.splice(idx, 1);
+        } else {
+            customBuilderExercises.push({ libId, sets: 3, reps: '12 reps', xp: 15 });
+        }
+        renderBuilderList();
+        renderBuilderSelected();
+    }
+
+    function renderBuilderSelected() {
+        const container = document.getElementById('builderSelected');
+        const count = document.getElementById('builderCount');
+        if (!container) return;
+        if (count) count.textContent = customBuilderExercises.length;
+        container.innerHTML = '';
+        customBuilderExercises.forEach((e, i) => {
+            const lib = EXERCISE_LIBRARY.find(l => l.id === e.libId);
+            const div = document.createElement('div');
+            div.style = 'display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg3);border-radius:8px;margin-bottom:4px;';
+            div.innerHTML = `
+                <span style="font-size:13px;flex:1;font-weight:600;">${lib?.name || e.libId}</span>
+                <input type="number" value="${e.sets}" min="1" max="10"
+                    style="width:40px;padding:4px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text);text-align:center;"
+                    onchange="customBuilderExercises[${i}].sets=+this.value"> séries
+                <button class="btn-ghost" style="padding:4px 8px;font-size:14px;"
+                    onclick="customBuilderExercises.splice(${i},1);renderBuilderSelected();renderBuilderList();">✕</button>`;
+            container.appendChild(div);
+        });
+    }
+
+    function saveBuilderWorkout() {
+        const name = document.getElementById('customWorkoutName')?.value.trim();
+        if (!name) { showNotif('Digite um nome para o treino'); return; }
+        if (customBuilderExercises.length === 0) { showNotif('Adicione pelo menos 1 exercício'); return; }
+        const workout = {
+            id: 'custom_' + Date.now(),
+            name,
+            icon: '📋',
+            exercises: customBuilderExercises.map(e => ({...e, xp: e.sets * 5}))
+        };
+        saveCustomWorkout(workout);
+        document.getElementById('workout-builder-modal').remove();
+        showNotif(`✅ Treino "${name}" salvo!`);
+    }
+
+    // ======================== RESET DIÁRIO ========================
+    function todayStr() {
+        return new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+    }
+
+    function checkDailyReset() {
+        const today = todayStr();
+        if (state.lastResetDate === today) return; // already reset today
+        if (state.lastResetDate === '') {
+            // First run — just record today, don't wipe
+            state.lastResetDate = today;
+            saveState();
+            return;
+        }
+        // New day! Reset daily progress (keep XP, level, streak, historico)
+        state.doneSets      = {};
+        state.doneExercises = new Set();
+        state.kegelDone     = new Set();
+        state.masseterDone  = new Set();
+        state.auxTimers     = {};
+        state.lastResetDate = today;
+        buildExercises();
+        buildAuxiliaries();
+        showNotif('🌅 Novo dia! Bora treinar!');
+        saveState();
+    }
+
+    // ======================== PERSISTÊNCIA ========================
+    function saveState() {
+        const data = {
+            xp:             state.xp,
+            level:          state.level,
+            streak:         state.streak,
+            doneDays:       state.doneDays,
+            doneSets:       state.doneSets,
+            doneExercises:  [...state.doneExercises],
+            kegelDone:      [...state.kegelDone],
+            masseterDone:   [...state.masseterDone],
+            historico:      state.historico,
+            lastResetDate:  state.lastResetDate
+        };
+        // Always save to localStorage (instant, offline)
+        try { localStorage.setItem('fittracker_state', JSON.stringify(data)); } catch(e) {}
+        // Save to Firebase if logged in
+        if (window._fb && window._currentUid) {
+            Object.entries(data).forEach(([key, val]) => {
+                window._fb.saveData(window._currentUid, key, val).catch(() => {});
+            });
+        }
+    }
+
+    function loadStateFromStorage() {
+        try {
+            const raw = localStorage.getItem('fittracker_state');
+            if (!raw) return;
+            const d = JSON.parse(raw);
+            if (d.xp            !== undefined) state.xp            = d.xp;
+            if (d.level         !== undefined) state.level         = d.level;
+            if (d.streak        !== undefined) state.streak        = d.streak;
+            if (d.doneDays      !== undefined) state.doneDays      = d.doneDays;
+            if (d.doneSets      !== undefined) state.doneSets      = d.doneSets;
+            if (d.doneExercises)               state.doneExercises = new Set(d.doneExercises);
+            if (d.kegelDone)                   state.kegelDone     = new Set(d.kegelDone);
+            if (d.masseterDone)                state.masseterDone  = new Set(d.masseterDone);
+            if (d.historico)                   state.historico     = d.historico;
+            if (d.lastResetDate)               state.lastResetDate = d.lastResetDate;
+        } catch(e) {}
+    }
+
+    function init() {
+        loadStateFromStorage(); // Load instantly from localStorage
+        checkDailyReset();
+        initLibraryFilters();
+        buildWeek();
+        buildExercises();
+        buildAuxiliaries();
+        renderHistorico();
+        updateXPUI();
+        initTabs();
+        document.getElementById('medData').valueAsDate = new Date();
+        
+        state.historico = [
+            { data: '2025-04-01', peso: 91, cintura: 94, coxaD: 60 },
+            { data: '2025-04-08', peso: 90.2, cintura: 92.5, coxaD: 60.5 }
+        ];
+        renderHistorico();
+        
+        resetCordaTimer();
+        animRunning = true;
+        animateBulgarian();
+
+        // Firebase Auth
+        function setupAuth() {
+            if (!window._fb) return;
+            window._fb.onAuth(user => {
+                if (user) {
+                    document.getElementById('login-overlay').style.display = 'none';
+                    document.getElementById('app').style.display = '';
+                    document.getElementById('user-avatar').textContent = user.displayName ? user.displayName[0].toUpperCase() : '👤';
+                    document.getElementById('user-avatar').title = user.displayName || user.email;
+                    // Store uid globally for saves
+                    window._currentUid = user.uid;
+                    // Load from localStorage first (instant)
+                    loadStateFromStorage();
+                    // Then sync from Firebase (authoritative)
+                    window._fb.loadAll(user.uid).then(all => {
+                        if (all.xp        !== undefined) state.xp        = all.xp;
+                        if (all.level     !== undefined) state.level      = all.level;
+                        if (all.streak    !== undefined) state.streak     = all.streak;
+                        if (all.doneDays  !== undefined) state.doneDays   = all.doneDays;
+                        if (all.doneSets  !== undefined) state.doneSets   = all.doneSets;
+                        if (all.doneExercises) state.doneExercises = new Set(all.doneExercises);
+                        if (all.kegelDone)     state.kegelDone     = new Set(all.kegelDone);
+                        if (all.masseterDone)  state.masseterDone  = new Set(all.masseterDone);
+                        if (all.historico)     state.historico     = all.historico;
+                        if (all.lastResetDate) state.lastResetDate = all.lastResetDate;
+                        if (all.custom_workouts) {
+                            localStorage.setItem('custom_workouts', JSON.stringify(all.custom_workouts));
+                        }
+                        // Rebuild UI with loaded data
+                        updateXPUI();
+                        buildWeek();
+                        buildExercises();
+                        buildAuxiliaries();
+                        renderHistorico();
+                        checkDailyReset();
+                        showNotif('☁️ Dados sincronizados!');
+                    }).catch(() => { showNotif('📱 Dados locais carregados'); });
+                } else {
+                    document.getElementById('login-overlay').style.display = 'flex';
+                    document.getElementById('app').style.display = 'none';
+                }
+            });
+        }
+        if (window._fb) setupAuth();
+        else window.addEventListener('firebase-ready', setupAuth, { once: true });
+    }
+    
+    init();
+
+    // Safety net: if Firebase never fires, show login after 8s
+    setTimeout(() => {
+        const overlay = document.getElementById('login-overlay');
+        const app = document.getElementById('app');
+        if (overlay && overlay.style.display === 'flex' && app && app.style.display === 'none') {
+            // Still on login screen - that's correct, do nothing
+        }
+    }, 8000);
+
+    // Check for new day every minute
+    setInterval(checkDailyReset, 60000);
+
+    window.showWorkoutPicker = showWorkoutPicker;
+    window.builderFilter = builderFilter;
+    window.toggleBuilderExercise = toggleBuilderExercise;
+    window.saveBuilderWorkout = saveBuilderWorkout;
+    window.toggleTheme = toggleTheme;
+    window.doSignIn = () => { if(window._fb) window._fb.signIn(); };
+    window.doSignOut = () => { if(window._fb) window._fb.signOut(); };
+    window.toggleAuxTimer = toggleAuxTimer;
+    window.toggleAuxDone = toggleAuxDone;
+    window.startFullWorkout = startFullWorkout;
+    window.completeExerciseSet = completeExerciseSet;
+    window.saveMeasure = saveMeasure;
+    window.toggleAnim = toggleAnim;
+    window.resetAnim = resetAnim;
+    window.toggleCordaTimer = toggleCordaTimer;
+    window.closeWorkoutModal = closeWorkoutModal;
+    window.wmCompleteSet = wmCompleteSet;
+    window.wmSkipRest = wmSkipRest;
+    window.wmNextExercise = wmNextExercise;
+    window.wmUpdateRestTime = wmUpdateRestTime;
+    window.resetCordaTimer = resetCordaTimer;
+
+</script>
+</body>
+</html>
